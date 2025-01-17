@@ -25,7 +25,7 @@ class_name MultiMeshScatter
 enum PlacementType { BOX, SPHERE }
 
 ## The number of instances to generate.
-export(int, 0, 10000) var count := 100 setget set_count, get_count
+export(int, 0, 100000) var count := 100 setget set_count, get_count
 func get_count(): return count
 func set_count(value):
 	count = value
@@ -167,15 +167,15 @@ func _ready() -> void:
 			_create_debug_area()
 		else:
 			_delete_debug_area()
-	else:
-		set_notify_transform(false)
-		set_ignore_transform_notification(true)
+#	else:
+#		set_notify_transform(false)
+#		set_ignore_transform_notification(true)
 
 	_update()
 
 func _notification(what: int) -> void:
 	if !is_inside_tree(): return
-	
+	if !Engine.is_editor_hint(): return
 	match what:
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_update_self_rotation()
@@ -268,10 +268,18 @@ func scatter() -> void:
 			.rotated(t.basis.x, deg2rad(_rng.randf_range(-random_rotation.x, random_rotation.x) + offset_rotation.x))\
 			.rotated(t.basis.y, deg2rad(_rng.randf_range(-random_rotation.y, random_rotation.y) + offset_rotation.y))\
 			.rotated(t.basis.z, deg2rad(_rng.randf_range(-random_rotation.z, random_rotation.z) + offset_rotation.z))\
-			.scaled(base_scale * Vector3(
-				_rng.randf_range(min_random_size.x, max_random_size.x),
-				_rng.randf_range(min_random_size.y, max_random_size.y),
-				_rng.randf_range(min_random_size.z, max_random_size.z)))
+#			.scaled(base_scale * Vector3(
+#				_rng.randf_range(min_random_size.x, max_random_size.x),
+#				_rng.randf_range(min_random_size.y, max_random_size.y),
+#				_rng.randf_range(min_random_size.z, max_random_size.z)))
+		
+		var scaled: Vector3 = base_scale * Vector3(
+			_rng.randf_range(min_random_size.x, max_random_size.x),
+			_rng.randf_range(min_random_size.y, max_random_size.y),
+			_rng.randf_range(min_random_size.z, max_random_size.z))
+		t.basis.x *= scaled.x
+		t.basis.y *= scaled.y
+		t.basis.z *= scaled.z
 		
 		t.origin = to_local(hit.position) + offset_position
 		multimesh.set_instance_transform(i, t)
